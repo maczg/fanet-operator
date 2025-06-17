@@ -123,9 +123,11 @@ spec:
                 description: FlightStatus represents the current flight status of
                   the UAV
                 enum:
-                - Grounded
                 - In-flight
-                - Emergency
+                - Charging
+                - Joining
+                - Leaving
+                - Unavailable
                 type: string
               networkConfig:
                 description: NetworkConfig defines the network configuration parameters
@@ -235,10 +237,24 @@ spec:
                 - Suboptimal
                 - Critical
                 type: string
+              flightStatus:
+                description: FlightStatus represents the current flight status of
+                  the UAV
+                enum:
+                - In-flight
+                - Charging
+                - Joining
+                - Leaving
+                - Unavailable
+                type: string
               lastUpdateTime:
                 description: LastUpdateTime is the timestamp of the last status update
                 format: date-time
                 type: string
+              nodeReady:
+                description: NodeReady indicates whether the UAV's node is ready to
+                  host virtual functions
+                type: boolean
             type: object
         type: object
     served: true
