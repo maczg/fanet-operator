@@ -1,0 +1,19 @@
+apiVersion: fanet.restart.eu/v1alpha1
+kind: ServiceChain
+metadata:
+  name: sc-sample
+spec:
+  # List of functions in the service chain
+  functions:
+    - name: vf-sample-1
+      image: fanet/virtual-function:latest
+      uavName: uav-sample-1
+      expectedDelay: 50
+    - name: vf-sample-2
+      image: fanet/virtual-function:latest
+      uavName: uav-sample-2
+      expectedDelay: 75
+  
+  # Performance metrics for the entire chain
+  performanceConfig:
+    maxTotalPropagationDelay: 200  # Maximum allowed total propagation delay in milliseconds

@@ -1,0 +1,22 @@
+apiVersion: fanet.restart.eu/v1alpha1
+kind: VirtualFunction
+metadata:
+  name: vf-sample
+spec:
+  image: fanet/virtual-function:latest
+  uavName: uav-sample
+  args:
+    - "--config=/etc/vf/config.yaml"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+  energyConfig:
+    idleConsumption: "2.5"
+    activeConsumption: "5.0"
+    maxConsumption: "8.0"
+  performanceConfig:
+    maxPropagationDelay: 100

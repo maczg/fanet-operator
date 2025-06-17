@@ -1,0 +1,49 @@
+apiVersion: fanet.restart.eu/v1alpha1
+kind: UAV
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: uav-rp3001
+  namespace: default
+spec:
+  nodeName: worker-rp3001
+  flightStatus: "In-flight"
+  batteryConfig:
+    maxCapacity: 100
+    criticalLevel: 20
+    lowLevel: 40
+  energyConfig:
+    motorIdleConsumption: "10.5"
+    ceIdleConsumption: "5.2"
+    maxTotalConsumption: "20.0"
+  ceCapacity:
+    maxCapacity: 5
+    deployedVFs: 0
+  networkConfig:
+    maxInterUAVDelay: 50
+---
+apiVersion: fanet.restart.eu/v1alpha1
+kind: UAV
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: uav-rp3002
+  namespace: default
+spec:
+  nodeName: worker-rp3002
+  flightStatus: "In-flight"
+  batteryConfig:
+    maxCapacity: 100
+    criticalLevel: 20
+    lowLevel: 40
+  energyConfig:
+    motorIdleConsumption: "10.5"
+    ceIdleConsumption: "5.2"
+    maxTotalConsumption: "20.0"
+  ceCapacity:
+    maxCapacity: 5
+    deployedVFs: 0
+  networkConfig:
+    maxInterUAVDelay: 50

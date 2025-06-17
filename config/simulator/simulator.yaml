@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uav-simulator-config
+data:
+  requirements.txt: |
+    kubernetes==28.1.0
+  simulator.py: |
+    from kubernetes import client, config
+    import time
+    import random
+    import math
+    from datetime import datetime
+
+    # Load kube config
+    config.load_kube_config()
+
+    # Create API client
+    v1 = client.CustomObjectsApi()
+
+    def get_uavs():
+        """Get all UAVs in the cluster"""
+        try:
+            uavs = v1.list_cluster_custom_object(
+                group="fanet.restart.eu",
+                version="v1alpha1",
+                plural="uavs"
+            )
+            return uavs.get('items', [])
+        except Exception as e:
+            print(f"Error getting UAVs: {e}")
+            return []
+
+    def calculate_battery_drain(uav):
+        """Calculate battery drain based on energy consumption"""
+        try:
+            # Get current consumption from status
+            current_consumption = float(uav['status'].get('currentEnergyConsumption', '0'))
+            
+            # Get battery config from spec
+            battery_config = uav['spec'].get('batteryConfig', {})
+            max_capacity = battery_config.get('maxCapacity', 100)
+            
+            # Calculate drain rate (percentage per second)
+            # Assuming 1 watt = 0.1% battery drain per second
+            drain_rate = (current_consumption * 0.1) / max_capacity
+            
+            return drain_rate
+        except Exception as e:
+            print(f"Error calculating battery drain: {e}")
+            return 0.01  # Default drain rate
+
+    def calculate_energy_consumption(uav):
+        """Calculate current energy consumption with fluctuations"""
+        try:
+            # Get base consumption from spec
+            energy_config = uav['spec'].get('energyConfig', {})
+            motor_idle = float(energy_config.get('motorIdleConsumption', '0'))
+            ce_idle = float(energy_config.get('ceIdleConsumption', '0'))
+            
+            # Add random fluctuations (±20%)
+            motor_fluctuation = random.uniform(-0.2, 0.2)
+            ce_fluctuation = random.uniform(-0.2, 0.2)
+            
+            total_consumption = (motor_idle * (1 + motor_fluctuation) + 
+                               ce_idle * (1 + ce_fluctuation))
+            
+            return f"{total_consumption:.2f}"
+        except Exception as e:
+            print(f"Error calculating energy consumption: {e}")
+            return "0.00"
+
+    def update_battery_health(uav):
+        """Update battery health based on current level and config"""
+        try:
+            current_level = uav['status'].get('currentBatteryLevel', 100)
+            battery_config = uav['spec'].get('batteryConfig', {})
+            critical_level = battery_config.get('criticalLevel', 20)
+            low_level = battery_config.get('lowLevel', 40)
+            
+            if current_level <= critical_level:
+                return "Critical"
+            elif current_level <= low_level:
+                return "Degraded"
+            else:
+                return "Good"
+        except Exception as e:
+            print(f"Error updating battery health: {e}")
+            return "Good"
+
+    def update_energy_efficiency(uav):
+        """Update energy efficiency based on current consumption and max allowed"""
+        try:
+            current_consumption = float(uav['status'].get('currentEnergyConsumption', '0'))
+            max_consumption = float(uav['spec'].get('energyConfig', {}).get('maxTotalConsumption', '100'))
+            
+            if current_consumption >= max_consumption:
+                return "Critical"
+            elif current_consumption >= (max_consumption * 0.8):
+                return "Suboptimal"
+            else:
+                return "Optimal"
+        except Exception as e:
+            print(f"Error updating energy efficiency: {e}")
+            return "Optimal"
+
+    def update_uav_status(uav):
+        """Update UAV status with new metrics"""
+        try:
+            name = uav['metadata']['name']
+            namespace = uav['metadata']['namespace']
+            
+            # Calculate new metrics
+            drain_rate = calculate_battery_drain(uav)
+            current_level = uav['status'].get('currentBatteryLevel', 100)
+            new_level = max(0, current_level - drain_rate)
+            
+            # Update status
+            status = {
+                'currentBatteryLevel': int(new_level),
+                'currentEnergyConsumption': calculate_energy_consumption(uav),
+                'batteryHealth': update_battery_health(uav),
+                'energyEfficiency': update_energy_efficiency(uav),
+                'lastUpdateTime': datetime.utcnow().isoformat() + 'Z'
+            }
+            
+            # Add conditions
+            conditions = []
+            if new_level <= 0:
+                conditions.append({
+                    'type': 'BatteryCritical',
+                    'status': 'True',
+                    'reason': 'BatteryDepleted',
+                    'message': 'UAV battery is depleted'
+                })
+            elif new_level <= uav['spec'].get('batteryConfig', {}).get('criticalLevel', 20):
+                conditions.append({
+                    'type': 'BatteryLow',
+                    'status': 'True',
+                    'reason': 'BatteryCritical',
+                    'message': 'UAV battery is critically low'
+                })
+            
+            status['conditions'] = conditions
+            
+            # Update UAV status
+            v1.patch_namespaced_custom_object(
+                group="fanet.restart.eu",
+                version="v1alpha1",
+                namespace=namespace,
+                plural="uavs",
+                name=name,
+                body={"status": status}
+            )
+            
+            print(f"Updated UAV {name} - Battery: {new_level:.1f}%, Consumption: {status['currentEnergyConsumption']}W")
+            
+        except Exception as e:
+            print(f"Error updating UAV {name}: {e}")
+
+    def main():
+        print("Starting UAV simulator...")
+        while True:
+            try:
+                uavs = get_uavs()
+                for uav in uavs:
+                    update_uav_status(uav)
+                time.sleep(1)  # Update every second
+            except Exception as e:
+                print(f"Error in main loop: {e}")
+                time.sleep(5)  # Wait before retrying
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uav-simulator
+spec:
+  containers:
+  - name: simulator
+    image: python:3.9-slim
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      pip install kubernetes==28.1.0
+      python /simulator/simulator.py
+    volumeMounts:
+    - name: simulator-config
+      mountPath: /simulator
+    - name: kubeconfig
+      mountPath: /root/.kube
+      readOnly: true
+  volumes:
+  - name: simulator-config
+    configMap:
+      name: uav-simulator-config
+  - name: kubeconfig
+    hostPath:
+      path: /root/.kube
+      type: Directory 

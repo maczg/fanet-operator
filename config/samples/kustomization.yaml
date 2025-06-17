@@ -1,0 +1,6 @@
+## Append samples of your project ##
+resources:
+- fanet_v1alpha1_uav.yaml
+- fanet_v1alpha1_virtualfunction.yaml
+- fanet_v1alpha1_servicechain.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

@@ -1,0 +1,247 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
+  name: uavs.fanet.restart.eu
+spec:
+  group: fanet.restart.eu
+  names:
+    kind: UAV
+    listKind: UAVList
+    plural: uavs
+    singular: uav
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: the name of the node where the UAV is running
+      jsonPath: .spec.nodeName
+      name: Node
+      type: string
+    - description: the battery level of the UAV, in percent
+      jsonPath: .spec.batteryLevel
+      name: Battery
+      type: integer
+    - description: the current flight status of the UAV
+      jsonPath: .status.flightStatus
+      name: Flight Status
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: UAV is the Schema for the uavs API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: UAVSpec defines the desired state of UAV
+            properties:
+              batteryConfig:
+                description: BatteryConfig defines the battery configuration parameters
+                properties:
+                  criticalLevel:
+                    description: CriticalLevel is the battery level that triggers
+                      critical status
+                    maximum: 100
+                    minimum: 0
+                    type: integer
+                  lowLevel:
+                    description: LowLevel is the battery level that triggers low battery
+                      warning
+                    maximum: 100
+                    minimum: 0
+                    type: integer
+                  maxCapacity:
+                    description: MaxCapacity is the maximum battery capacity in percentage
+                    maximum: 100
+                    minimum: 0
+                    type: integer
+                required:
+                - criticalLevel
+                - lowLevel
+                - maxCapacity
+                type: object
+              ceCapacity:
+                description: CECapacity defines the computing capacity of the UAV
+                properties:
+                  deployedVFs:
+                    description: DeployedVFs represents the number of Virtual Functions
+                      currently deployed
+                    format: int32
+                    minimum: 0
+                    type: integer
+                  maxCapacity:
+                    description: MaxCapacity represents the maximum capacity of the
+                      Computing Element
+                    format: int32
+                    minimum: 0
+                    type: integer
+                required:
+                - deployedVFs
+                - maxCapacity
+                type: object
+              energyConfig:
+                description: EnergyConfig defines the energy consumption configuration
+                properties:
+                  ceIdleConsumption:
+                    description: CEIdleConsumption is the energy consumption of computing
+                      elements in idle state (in watts)
+                    pattern: ^\d+(\.\d+)?$
+                    type: string
+                  maxTotalConsumption:
+                    description: MaxTotalConsumption is the maximum allowed total
+                      energy consumption (in watts)
+                    pattern: ^\d+(\.\d+)?$
+                    type: string
+                  motorIdleConsumption:
+                    description: MotorIdleConsumption is the energy consumption of
+                      motors in idle state (in watts)
+                    pattern: ^\d+(\.\d+)?$
+                    type: string
+                required:
+                - ceIdleConsumption
+                - maxTotalConsumption
+                - motorIdleConsumption
+                type: object
+              flightStatus:
+                description: FlightStatus represents the current flight status of
+                  the UAV
+                enum:
+                - Grounded
+                - In-flight
+                - Emergency
+                type: string
+              networkConfig:
+                description: NetworkConfig defines the network configuration parameters
+                properties:
+                  maxInterUAVDelay:
+                    description: MaxInterUAVDelay is the maximum allowed delay between
+                      UAVs (in milliseconds)
+                    minimum: 0
+                    type: integer
+                required:
+                - maxInterUAVDelay
+                type: object
+              nodeName:
+                description: NodeName is the name of the node where the UAV is deployed
+                type: string
+            required:
+            - batteryConfig
+            - ceCapacity
+            - energyConfig
+            - flightStatus
+            - networkConfig
+            - nodeName
+            type: object
+          status:
+            description: UAVStatus defines the observed state of UAV
+            properties:
+              batteryHealth:
+                description: BatteryHealth represents the health status of the battery
+                enum:
+                - Good
+                - Degraded
+                - Critical
+                type: string
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the UAV's current state
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              currentBatteryLevel:
+                description: CurrentBatteryLevel is the current battery level in percentage
+                maximum: 100
+                minimum: 0
+                type: integer
+              currentEnergyConsumption:
+                description: CurrentEnergyConsumption is the current total energy
+                  consumption (in watts)
+                pattern: ^\d+(\.\d+)?$
+                type: string
+              energyEfficiency:
+                description: EnergyEfficiency represents the current energy efficiency
+                  status
+                enum:
+                - Optimal
+                - Suboptimal
+                - Critical
+                type: string
+              lastUpdateTime:
+                description: LastUpdateTime is the timestamp of the last status update
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

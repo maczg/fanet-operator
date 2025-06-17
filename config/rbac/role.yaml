@@ -1,0 +1,50 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fanet.restart.eu
+  resources:
+  - servicechains
+  - uavs
+  - virtualfunctions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fanet.restart.eu
+  resources:
+  - servicechains/finalizers
+  - uavs/finalizers
+  - virtualfunctions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - fanet.restart.eu
+  resources:
+  - servicechains/status
+  - uavs/status
+  - virtualfunctions/status
+  verbs:
+  - get
+  - patch
+  - update
