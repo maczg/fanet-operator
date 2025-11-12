@@ -1,8 +1,30 @@
-# fanet-operator
-// TODO(user): Add simple overview of use/purpose
+# FANET Operator
+A Kubernetes operator for managing Flying Ad-hoc Network (FANET) infrastructure with drone-based edge computing capabilities.
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+## Overview
+
+The FANET Kubernetes Operator extends the Kubernetes API to manage Flying Ad Hoc Networks (FANETs) - networks of Unmanned Aerial Vehicles (UAVs a.k.a Drones) 
+equipped with computing capabilities. 
+This operator introduces drones as first-class citizens within a Kubernetes cluster and provides mechanisms to deploy containerized network services on them.
+
+## (Wanted) Features
+
+- **Energy-aware scheduling** based on battery levels and consumption rates
+- **Automatic drone provisioning** when creating FANETs
+- **VirtualFunction (VF) migration** between drones for load balancing
+- **Service chain composition** for complex multi-tier applications
+- **Real-time monitoring** of resources and operational status
+- **Cascade deletion** with proper cleanup via owner references
+- **Periodic reconciliation** for status updates and battery simulation
+
+## Architecture
+
+The operator manages four key Custom Resource Definitions (CRDs):
+
+- **Drone**: Represents individual drones with battery tracking, node association, and computing capabilities
+- **FANET**: Groups multiple drones into flying ad-hoc networks with aggregated statistics
+- **VirtualFunction (VF)**: Containerized workloads that run on drone nodes with migration support
+- **ServiceChain**: Chains of virtual functions that work together as a complete service
 
 ## Getting Started
 
@@ -12,11 +34,45 @@
 - kubectl version v1.11.3+.
 - Access to a Kubernetes v1.11.3+ cluster.
 
-### To Deploy on the cluster
+### Deploy on a local testing cluster
+
+The operator (controller) will be executed inside the Kind cluster.
+It is installed as a **Deployment** in the `fanet-operator-system` namespace.
+To make the operator image available to the Kind cluster we need first to build the container image
+which source code is in `cmd/main.go`, `internal/controller/` (controller), and `api/v1alpha1/` (api and types) folders.
+Along with the operator, the Custom Resource Definitions (CRDs) will be created in the cluster.
+
+The Makefile provided in [hack/Makefile.local.mk](hack/Makefile.local.mk) includes targets to create a Kind cluster,
+build the operator image, and deploy it to the Kind cluster with few simple commands, and it is included in the main Makefile.
+
+> [!NOTE]
+> To list all available make targets, run `make help`.
+
+
+The following command will: 
+- ensure that the Kind is installed. Otherwise, it will be downloaded and installed locally.
+- create a local Kind cluster using the config file in [kind/kind-config.yaml](kind/config.yaml).
+- build the operator image and load it into the Kind cluster.
+- create the CRDs in the cluster.
+- deploy the operator controller in the Kind cluster.
+
+> [!NOTE]
+> It may require up to 10 minutes to complete the process.
+
+
+```sh
+make kind-deploy
+```
+
+The resulting cluster will have one master and two worker nodes. The hostames of the nodes are
+similar to raspberry pi devices, i.e., `worker-rp3001`, `worker-rp3002`.
+
+### Development Workflow
+
 **Build and push your image to the location specified by `IMG`:**
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/fanet-operator:tag
+make docker-build docker-push IMG=<some-registry>/fanet-operator:<tag>
 ```
 
 **NOTE:** This image ought to be published in the personal registry you specified.
@@ -32,7 +88,7 @@ make install
 **Deploy the Manager to the cluster with the image specified by `IMG`:**
 
 ```sh
-make deploy IMG=<some-registry>/fanet-operator:tag
+make deploy IMG=<some-registry>/fanet-operator:<tag>
 ```
 
 > **NOTE**: If you encounter RBAC errors, you may need to grant yourself cluster-admin
@@ -67,8 +123,6 @@ make undeploy
 ```
 
 ## Project Distribution
-
-Following the options to release and provide this solution to the users.
 
 ### By providing a bundle with all YAML files
 
@@ -110,8 +164,6 @@ the '--force' flag and manually ensure that any custom configuration
 previously added to 'dist/chart/values.yaml' or 'dist/chart/manager/manager.yaml'
 is manually re-applied afterwards.
 
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
 
 **NOTE:** Run `make help` for more information on all potential `make` targets
 
