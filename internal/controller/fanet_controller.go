@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -33,6 +34,28 @@ type FanetReconciler struct {
 func (r *FanetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := logf.FromContext(ctx)
 	logger.Info("reconciling fanet", "fanet", req.NamespacedName)
+
+	// Fetch the Fanet instance
+	var fanet fanetv1alpha1.Fanet
+	if err := r.Get(ctx, req.NamespacedName, &fanet); err != nil {
+		logger.Error(err, "unable to fetch Fanet")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if fanet.Status.LastUpdated.IsZero() {
+		fanet.Status.TotalDroneCount = int32(len(fanet.Spec.Drones))
+		fanet.Status.InFlightCount = 0
+		fanet.Status.LeavingCount = 0
+		fanet.Status.NotAvailableCount = 0
+		fanet.Status.VFTotal = 0
+		fanet.Status.DroneStatuses = []fanetv1alpha1.DroneStatusSummary{}
+		fanet.Status.LastUpdated = metav1.Now()
+		if err := r.Status().Update(ctx, &fanet); err != nil {
+			logger.Error(err, "unable to update Fanet status")
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 

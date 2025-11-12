@@ -35,15 +35,17 @@ type DroneStatusSummary struct {
 // FanetStatus defines the observed state of Fanet.
 type FanetStatus struct {
 	// TotalDroneCount is the total number of drones in this FANET
-	// +optional
-	// +kubebuilder:validation:Minimum=0
-	TotalDroneCount   int32 `json:"totalDroneCount"`
-	InFlightCount     int32 `json:"inFlightCount,omitempty"`
-	LeavingCount      int32 `json:"leavingCount,omitempty"`
-	NotAvailableCount int32 `json:"notAvailableCount,omitempty"`
-	VFTotal           int32 `json:"vfTotal,omitempty"`
+	TotalDroneCount int32 `json:"totalDroneCount"`
+	// InFlightCount is the number of drones in flight
+	InFlightCount int32 `json:"inFlightCount"`
+	// LeavingCount is the number of drones leaving
+	LeavingCount int32 `json:"leavingCount"`
+	// NotAvailableCount is the number of drones not available
+	NotAvailableCount int32 `json:"notAvailableCount"`
+	// VFTotal is the total number of virtual functions across all drones
+	VFTotal int32 `json:"vfTotal"`
 	// DroneStatuses contains the status of each drone
-	DroneStatuses []DroneStatusSummary `json:"droneStatuses,omitempty"`
+	DroneStatuses []DroneStatusSummary `json:"droneStatuses"`
 	// LastUpdated is the last time the status was updated
 	LastUpdated metav1.Time `json:"lastUpdated,omitempty"`
 }
@@ -62,9 +64,8 @@ type FanetStatus struct {
 type Fanet struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   FanetSpec   `json:"spec,omitempty"`
-	Status FanetStatus `json:"status,omitempty"`
+	Spec              FanetSpec   `json:"spec,omitempty"`
+	Status            FanetStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
