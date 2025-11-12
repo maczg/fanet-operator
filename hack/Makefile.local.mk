@@ -2,7 +2,7 @@
 
 KIND_CLUSTER_NAME ?= demo-fanet-cluster
 KIND_VERSION ?= v0.30.0
-KIND_NODE_IMAGE_VERSION ?= v1.34.0
+KIND_NODE_IMAGE_VERSION ?= v1.27.3
 KIND_IN_PATH := $(shell command -v kind 2>/dev/null)
 KIND := $(if $(KIND_IN_PATH),$(KIND_IN_PATH),$(shell go env GOPATH)/bin/kind)
 

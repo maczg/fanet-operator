@@ -1,0 +1,14 @@
+apiVersion: fanet.restart.io/v1alpha1
+kind: Fanet
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: demo-fanet
+spec:
+    # List of Drones in this FANET
+    drones:
+      - name: drone-1
+        nodeRef: worker-rp30001
+      - name: drone-2
+        nodeRef: worker-rp30002

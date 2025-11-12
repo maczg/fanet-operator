@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- fanet_v1alpha1_fanet.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

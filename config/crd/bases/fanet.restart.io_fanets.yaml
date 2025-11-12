@@ -1,0 +1,148 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: fanets.fanet.restart.io
+spec:
+  group: fanet.restart.io
+  names:
+    kind: Fanet
+    listKind: FanetList
+    plural: fanets
+    shortNames:
+    - fn
+    singular: fanet
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Total number of drones in the FANET
+      jsonPath: .status.totalDroneCount
+      name: TotalDrones
+      type: integer
+    - description: Number of drones in flight
+      jsonPath: .status.inFlightCount
+      name: InFlight
+      type: integer
+    - description: Number of drones leaving
+      jsonPath: .status.leavingCount
+      name: Leaving
+      type: integer
+    - description: Number of drones not available
+      jsonPath: .status.notAvailableCount
+      name: NotAvailable
+      type: integer
+    - description: Total number of virtual functions across all drones
+      jsonPath: .status.vfTotal
+      name: VFTotal
+      type: integer
+    - description: Age of the FANET
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Fanet is the Schema for the fanets API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: FanetSpec defines the desired state of Fanet.
+            properties:
+              drones:
+                description: Drones is the list of drones in this FANET
+                items:
+                  description: DroneReference contains reference to a Drone
+                  properties:
+                    name:
+                      description: DroneName is the name of the drone
+                      type: string
+                    nodeRef:
+                      description: NodeRef is the reference to the node the drone
+                        is hosting
+                      type: string
+                  required:
+                  - name
+                  - nodeRef
+                  type: object
+                type: array
+            type: object
+          status:
+            description: FanetStatus defines the observed state of Fanet.
+            properties:
+              droneStatuses:
+                description: DroneStatuses contains the status of each drone
+                items:
+                  description: DroneStatusSummary contains summary status of a drone
+                    in the FANET.
+                  properties:
+                    batteryLevel:
+                      description: BatteryLevel is the battery level
+                      type: string
+                    computingDrone:
+                      description: ComputingDrone indicates if this drone is a computing
+                        drone or not
+                      type: boolean
+                    name:
+                      description: Name of the drone
+                      type: string
+                    status:
+                      description: Status is the operational status
+                      type: string
+                    vfCount:
+                      description: VFCount is the number of VFs
+                      format: int32
+                      type: integer
+                  required:
+                  - batteryLevel
+                  - computingDrone
+                  - name
+                  - status
+                  - vfCount
+                  type: object
+                type: array
+              inFlightCount:
+                format: int32
+                type: integer
+              lastUpdated:
+                description: LastUpdated is the last time the status was updated
+                format: date-time
+                type: string
+              leavingCount:
+                format: int32
+                type: integer
+              notAvailableCount:
+                format: int32
+                type: integer
+              totalDroneCount:
+                description: TotalDroneCount is the total number of drones in this
+                  FANET
+                format: int32
+                minimum: 0
+                type: integer
+              vfTotal:
+                format: int32
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
