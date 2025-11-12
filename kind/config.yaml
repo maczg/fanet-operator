@@ -1,0 +1,35 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: demo-fanet-cluster
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ./kind/hostname_cp
+        containerPath: /etc/hostname
+    labels:
+      custom-label: "control-plane"
+    kubeadmConfigPatches: ## required to enable ingress on the control-plane node
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 443
+        hostPort: 443
+        protocol: TCP
+  - role: worker
+    labels:
+      custom-label: "worker"
+    extraMounts:
+      - hostPath: ./kind/hostname_worker1
+        containerPath: /etc/hostname
+  - role: worker
+    labels:
+      custom-label: "worker"
+    extraMounts:
+      - hostPath: ./kind/hostname_worker2
+        containerPath: /etc/hostname
