@@ -7,6 +7,11 @@ The FANET Kubernetes Operator extends the Kubernetes API to manage Flying Ad Hoc
 equipped with computing capabilities. 
 This operator introduces drones as first-class citizens within a Kubernetes cluster and provides mechanisms to deploy containerized network services on them.
 
+## Disclaimer ⚠
+This project is a proof-of-concept implementation for research and educational purposes.
+The implementation is lacking of real drone metrics collection and other production-grade features.
+Currently, metrics like battery levels, latencies and computing capabilities are mainly static and must be patched manually.
+
 ## (Wanted) Features
 
 - **Energy-aware scheduling** based on battery levels and consumption rates
@@ -27,6 +32,49 @@ The operator manages four key Custom Resource Definitions (CRDs):
 - **ServiceChain**: Chains of virtual functions that work together as a complete service
 
 ## Getting Started
+
+### Quick Start Guide
+
+#### Install
+Install the FANET Operator on local cluster by applying the provided YAML bundle:
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/maczg/fanet-operator/main/dist/install.yaml
+```
+
+This command will install the FANET Operator along with its Custom Resource Definitions (CRDs) into your Kubernetes cluster.
+
+#### Test Resources
+
+1. Create the Drones
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/maczg/fanet-operator/main/config/samples/fanet_v1alpha1_drone.yaml
+```
+
+2. Create the FANET
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/maczg/fanet-operator/main/config/samples/fanet_v1alpha1_fanet.yaml
+```
+3. Create the Service Chain with Virtual Functions
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/maczg/fanet-operator/main/config/samples/fanet_v1alpha1_servicechain.yaml
+```
+
+#### Verify
+Check the status of the created resources:
+```sh
+kubectl get drones
+kubectl get fanets
+kubectl get virtualfunctions
+kubectl get servicechains
+```
+
+> [!NOTE]
+> Ensure to modify the sample YAML files to fit your specific testing environment and requirements.
+> For example, the DRONE-NODE relationship must match the node names in your cluster.
 
 ### Prerequisites
 - go version v1.24.0+
