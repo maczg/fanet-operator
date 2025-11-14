@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	fanetv1alpha1 "github.com/maczg/fanet-operator/api/v1alpha1"
@@ -122,6 +123,7 @@ func (r *FanetReconciler) updateFanetStatus(ctx context.Context, fanet *fanetv1a
 		}
 
 		vfTotal += drone.Status.VFCount
+		logger.Info("Drone VFCount", "drone", drone.Name, "vfCount", drone.Status.VFCount, "runningTotal", vfTotal)
 
 		droneStatuses = append(droneStatuses, fanetv1alpha1.DroneStatusInfo{
 			DroneName:         drone.Name,
@@ -151,6 +153,7 @@ func (r *FanetReconciler) updateFanetStatus(ctx context.Context, fanet *fanetv1a
 		latestFanet.Status.NotAvailableCount = notAvailableCount
 		latestFanet.Status.VFTotal = vfTotal
 		latestFanet.Status.DroneStatuses = droneStatuses
+		logger.Info("Updating FANET VFTotal", "fanet", fanet.Name, "vfTotal", vfTotal)
 
 		if err := r.Status().Update(ctx, latestFanet); err != nil {
 			if errors.IsConflict(err) {
@@ -169,10 +172,55 @@ func (r *FanetReconciler) updateFanetStatus(ctx context.Context, fanet *fanetv1a
 	return nil
 }
 
+// findFanetForDrone returns a reconcile request for a Fanet when its Drone changes
+func (r *FanetReconciler) findFanetForDrone(ctx context.Context, obj client.Object) []ctrl.Request {
+	drone, ok := obj.(*fanetv1alpha1.Drone)
+	if !ok {
+		return []ctrl.Request{}
+	}
+
+	// If the drone has a FanetRef in its status, reconcile that Fanet
+	if drone.Status.FanetRef != nil && drone.Status.FanetRef.Name != "" && drone.Status.FanetRef.Name != FanetNotAssigned {
+		return []ctrl.Request{
+			{
+				NamespacedName: types.NamespacedName{
+					Name:      drone.Status.FanetRef.Name,
+					Namespace: drone.Namespace,
+				},
+			},
+		}
+	}
+
+	// Otherwise, check all Fanets to see if any reference this drone
+	fanetList := &fanetv1alpha1.FanetList{}
+	if err := r.List(ctx, fanetList, client.InNamespace(drone.Namespace)); err != nil {
+		return []ctrl.Request{}
+	}
+
+	for _, fanet := range fanetList.Items {
+		for _, droneRef := range fanet.Spec.Drones {
+			if droneRef.Name == drone.Name {
+				return []ctrl.Request{
+					{
+						NamespacedName: types.NamespacedName{
+							Name:      fanet.Name,
+							Namespace: fanet.Namespace,
+						},
+					},
+				}
+			}
+		}
+	}
+
+	return []ctrl.Request{}
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *FanetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&fanetv1alpha1.Fanet{}).
+		Watches(&fanetv1alpha1.Drone{},
+			handler.EnqueueRequestsFromMapFunc(r.findFanetForDrone)).
 		Named("fanet").
 		Complete(r)
 }

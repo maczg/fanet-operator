@@ -13,6 +13,7 @@ import (
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	fanetv1alpha1 "github.com/maczg/fanet-operator/api/v1alpha1"
@@ -157,11 +158,27 @@ func (r *DroneReconciler) updateDroneStatus(ctx context.Context, drone fanetv1al
 		} else {
 			vfCount := 0
 			for _, vf := range vfList.Items {
-				if vf.Spec.DroneRef != nil && vf.Spec.DroneRef.Name == latestDrone.Name {
-					vfCount++
+				if vf.Spec.DroneRef != nil {
+					logger.V(1).Info("Checking VF drone assignment",
+						"vf", vf.Name,
+						"droneRef.Name", vf.Spec.DroneRef.Name,
+						"droneRef.Namespace", vf.Spec.DroneRef.Namespace,
+						"droneRef.Kind", vf.Spec.DroneRef.Kind,
+						"currentDrone", latestDrone.Name,
+						"currentDroneNamespace", latestDrone.Namespace)
+					// Check if the drone reference matches this drone
+					// Handle both cases: when namespace is specified and when it's not
+					namespaceMatch := vf.Spec.DroneRef.Namespace == "" || vf.Spec.DroneRef.Namespace == latestDrone.Namespace
+					nameMatch := vf.Spec.DroneRef.Name == latestDrone.Name
+
+					if nameMatch && namespaceMatch {
+						vfCount++
+						logger.V(1).Info("VF counted for drone", "vf", vf.Name, "drone", latestDrone.Name)
+					}
 				}
 			}
 			latestDrone.Status.VFCount = vfCount
+			logger.Info("VFCount updated for drone", "drone", latestDrone.Name, "vfCount", vfCount)
 		}
 
 		// Update operational status based on battery level
@@ -196,10 +213,48 @@ func (r *DroneReconciler) updateDroneStatus(ctx context.Context, drone fanetv1al
 	return nil
 }
 
+// findDronesForVirtualFunction returns reconcile requests for drones when a VirtualFunction changes
+func (r *DroneReconciler) findDronesForVirtualFunction(ctx context.Context, obj client.Object) []ctrl.Request {
+	vf, ok := obj.(*fanetv1alpha1.VirtualFunction)
+	if !ok {
+		return []ctrl.Request{}
+	}
+
+	requests := []ctrl.Request{}
+
+	// Add the current drone if specified
+	if vf.Spec.DroneRef != nil && vf.Spec.DroneRef.Name != "" {
+		namespace := vf.Namespace
+		if vf.Spec.DroneRef.Namespace != "" {
+			namespace = vf.Spec.DroneRef.Namespace
+		}
+		requests = append(requests, ctrl.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      vf.Spec.DroneRef.Name,
+				Namespace: namespace,
+			},
+		})
+	}
+
+	// Also add the previous drone if it was changed (stored in status)
+	if vf.Status.LastDroneRef != "" && vf.Status.LastDroneRef != vf.Spec.DroneRef.Name {
+		requests = append(requests, ctrl.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      vf.Status.LastDroneRef,
+				Namespace: vf.Namespace,
+			},
+		})
+	}
+
+	return requests
+}
+
 // SetupWithManager sets up the controller with the Manager
 func (r *DroneReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&fanetv1alpha1.Drone{}).
+		Watches(&fanetv1alpha1.VirtualFunction{},
+			handler.EnqueueRequestsFromMapFunc(r.findDronesForVirtualFunction)).
 		Named("drone").
 		Complete(r)
 }

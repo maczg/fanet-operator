@@ -75,11 +75,8 @@ func (r *VirtualFunctionReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
-	// Update VF count on drone
-	if err := r.updateDroneVFCount(ctx, vf.Spec.DroneRef.Name, vf.Namespace, 1); err != nil {
-		logger.Error(err, "Failed to update Drone VF count", "drone", vf.Spec.DroneRef.Name)
-		return ctrl.Result{}, err
-	}
+	// The Drone controller will update VFCount by counting VirtualFunctions
+	// No need to update it here to avoid race conditions
 
 	// update Status
 	if err := r.updateVFStatus(ctx, vf); err != nil {
@@ -112,12 +109,8 @@ func (r *VirtualFunctionReconciler) handleVFDeletion(ctx context.Context, vf *fa
 			}
 		}
 
-		// Update drone VF count
-		if vf.Spec.DroneRef != nil {
-			if err := r.updateDroneVFCount(ctx, vf.Spec.DroneRef.Name, vf.Namespace, -1); err != nil {
-				log.Error(err, "Failed to update drone VF count")
-			}
-		}
+		// The Drone controller will update VFCount by counting VirtualFunctions
+		// No need to update it here to avoid race conditions
 
 		// Remove finalizer
 		controllerutil.RemoveFinalizer(vf, VFfinalizerName)
@@ -127,24 +120,6 @@ func (r *VirtualFunctionReconciler) handleVFDeletion(ctx context.Context, vf *fa
 	}
 
 	return ctrl.Result{}, nil
-}
-
-func (r *VirtualFunctionReconciler) updateDroneVFCount(ctx context.Context, droneName, namespace string, delta int) error {
-	drone := &fanetv1alpha1.Drone{}
-	err := r.Get(ctx, types.NamespacedName{Name: droneName, Namespace: namespace}, drone)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	drone.Status.VFCount = drone.Status.VFCount + delta
-	if drone.Status.VFCount < 0 {
-		drone.Status.VFCount = 0
-	}
-
-	return r.Status().Update(ctx, drone)
 }
 
 func (r *VirtualFunctionReconciler) handleVFMigration(ctx context.Context, vf *fanetv1alpha1.VirtualFunction, oldDrone, newDrone string) error {
@@ -162,11 +137,6 @@ func (r *VirtualFunctionReconciler) handleVFMigration(ctx context.Context, vf *f
 		// Wait for pod deletion
 		// TODO: Implement proper wait with backoff instead of sleep
 		time.Sleep(2 * time.Second)
-	}
-
-	// Update VF counts
-	if err := r.updateDroneVFCount(ctx, oldDrone, vf.Namespace, -1); err != nil {
-		log.Error(err, "Failed to decrement old drone VF count")
 	}
 
 	log.Info("VF migration completed", "vf", vf.Name)
