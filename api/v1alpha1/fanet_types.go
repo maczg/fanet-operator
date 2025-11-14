@@ -7,9 +7,9 @@ import (
 // DroneReference contains reference to a Drone
 type DroneReference struct {
 	// NodeRef is the reference to the node the drone is hosting
-	NodeRef string `json:"nodeRef"`
+	Name string `json:"name"`
 	// DroneName is the name of the drone
-	DroneName string `json:"name"`
+	NodeRef *NodeReference `json:"nodeRef,omitempty"`
 }
 
 // FanetSpec defines the desired state of Fanet.
@@ -18,36 +18,37 @@ type FanetSpec struct {
 	Drones []DroneReference `json:"drones,omitempty"`
 }
 
-// DroneStatusSummary contains summary status of a drone in the FANET.
-type DroneStatusSummary struct {
-	// Name of the drone
-	Name string `json:"name"`
-	// Status is the operational status
-	Status string `json:"status"`
-	// BatteryLevel is the battery level
-	BatteryLevel string `json:"batteryLevel"`
-	// VFCount is the number of VFs
-	VFCount int32 `json:"vfCount"`
-	// ComputingDrone indicates if this drone is a computing drone or not
-	ComputingDrone bool `json:"computingDrone"`
+// DroneStatusInfo contains status information about a drone
+type DroneStatusInfo struct {
+	DroneName         string            `json:"droneName"`
+	OperationalStatus OperationalStatus `json:"operationalStatus,omitempty"`
+	BatteryLevel      int               `json:"batteryLevel,omitempty"`
+	ComputingDrone    bool              `json:"computingDrone,omitempty"`
+	VFCount           int               `json:"vfCount,omitempty"`
+	NodeReady         bool              `json:"nodeReady,omitempty"`
+	CPUAvailable      string            `json:"cpuAvailable,omitempty"`
+	MemoryAvailable   string            `json:"memoryAvailable,omitempty"`
 }
 
 // FanetStatus defines the observed state of Fanet.
 type FanetStatus struct {
-	// TotalDroneCount is the total number of drones in this FANET
-	TotalDroneCount int32 `json:"totalDroneCount"`
+	// TotalDroneCount is the total number of drones
+	TotalDroneCount int `json:"totalDroneCount,omitempty"`
+
 	// InFlightCount is the number of drones in flight
-	InFlightCount int32 `json:"inFlightCount"`
+	InFlightCount int `json:"inFlightCount,omitempty"`
+
 	// LeavingCount is the number of drones leaving
-	LeavingCount int32 `json:"leavingCount"`
+	LeavingCount int `json:"leavingCount,omitempty"`
+
 	// NotAvailableCount is the number of drones not available
-	NotAvailableCount int32 `json:"notAvailableCount"`
-	// VFTotal is the total number of virtual functions across all drones
-	VFTotal int32 `json:"vfTotal"`
-	// DroneStatuses contains the status of each drone
-	DroneStatuses []DroneStatusSummary `json:"droneStatuses"`
-	// LastUpdated is the last time the status was updated
-	LastUpdated metav1.Time `json:"lastUpdated,omitempty"`
+	NotAvailableCount int `json:"notAvailableCount,omitempty"`
+
+	// DroneStatuses is the status of each drone
+	DroneStatuses []DroneStatusInfo `json:"droneStatuses,omitempty"`
+
+	// VFTotal is the total number of virtual functions
+	VFTotal int `json:"vfTotal,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -57,7 +58,7 @@ type FanetStatus struct {
 // +kubebuilder:printcolumn:name="InFlight",type="integer",JSONPath=".status.inFlightCount",description="Number of drones in flight"
 // +kubebuilder:printcolumn:name="Leaving",type="integer",JSONPath=".status.leavingCount",description="Number of drones leaving"
 // +kubebuilder:printcolumn:name="NotAvailable",type="integer",JSONPath=".status.notAvailableCount",description="Number of drones not available"
-// +kubebuilder:printcolumn:name="VFTotal",type="integer",JSONPath=".status.vfTotal",description="Total number of virtual functions across all drones"
+// +kubebuilder:printcolumn:name="VFTotal",type="integer",JSONPath=".status.vfTotal",description="Total number of virtual functions in the FANET"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Age of the FANET"
 
 // Fanet is the Schema for the fanets API.

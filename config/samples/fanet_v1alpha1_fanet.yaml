@@ -6,9 +6,11 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: demo-fanet
 spec:
-    # List of Drones in this FANET
-    drones:
-      - name: drone-1
-        nodeRef: worker-rp30001
-      - name: drone-2
-        nodeRef: worker-rp30002
+  # List of Drones in this FANET
+  drones:
+    - name: drone-rp3001
+      nodeRef:
+        name: worker-rp3001
+    - name: drone-rp3002
+      nodeRef:
+        name: worker-rp3002

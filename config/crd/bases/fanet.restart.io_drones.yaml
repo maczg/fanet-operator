@@ -1,0 +1,175 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: drones.fanet.restart.io
+spec:
+  group: fanet.restart.io
+  names:
+    kind: Drone
+    listKind: DroneList
+    plural: drones
+    shortNames:
+    - dr
+    singular: drone
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Current operational status of the drone
+      jsonPath: .status.operationalStatus
+      name: OperationalStatus
+      type: string
+    - description: FANET this drone is assigned to
+      jsonPath: .status.fanetRef.name
+      name: FANET
+      type: string
+    - description: Current battery level percentage
+      jsonPath: .status.batteryLevel
+      name: BatteryLevel
+      type: integer
+    - description: Indicates if this is a computing drone
+      jsonPath: .status.computingDrone
+      name: ComputingDrone
+      type: boolean
+    - description: Indicates if the node is ready
+      jsonPath: .status.nodeReady
+      name: NodeReady
+      type: boolean
+    - description: Available CPU
+      jsonPath: .status.cpuAvailable
+      name: CPUAvailable
+      type: string
+    - description: Available memory
+      jsonPath: .status.memoryAvailable
+      name: MemoryAvailable
+      type: string
+    - description: Number of virtual functions running on this drone
+      jsonPath: .status.vfCount
+      name: VFCount
+      type: integer
+    - description: Age of the drone
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: Last update timestamp
+      jsonPath: .status.lastUpdated
+      name: LastUpdated
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Drone is the Schema for the drones API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DroneSpec defines the desired state of Drone.
+            properties:
+              batteryCapacity:
+                description: BatteryCapacity is the battery capacity in Wh
+                type: integer
+              ceIdleConsumptionWh:
+                description: CEIdleConsumptionWh is the CE idle consumption in Wh
+                type: string
+              computingDrone:
+                description: ComputingDrone indicates if this is a computing drone
+                type: boolean
+              fanetRef:
+                description: FanetRef references the FANET this drone belongs to
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              motorIdleConsumptionWh:
+                description: MotorIdleConsumptionWh is the motor idle consumption
+                  in Wh
+                type: string
+              nodeRef:
+                description: NodeRef references the Kubernetes node
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+            type: object
+          status:
+            description: DroneStatus defines the observed state of Drone.
+            properties:
+              batteryLevel:
+                description: BatteryLevel is the current battery level percentage
+                type: integer
+              ceMaxCapacity:
+                description: CEMaxCapacity is the maximum capacity of the CE
+                properties:
+                  cpu:
+                    type: string
+                  memory:
+                    type: string
+                type: object
+              computingDrone:
+                description: ComputingDrone indicates if this is a computing drone
+                type: boolean
+              cpuAvailable:
+                description: CPUAvailable is the available CPU
+                type: string
+              fanetRef:
+                description: FanetRef references the FANET this drone is assigned
+                  to
+                properties:
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              lastUpdated:
+                description: LastUpdated is the last update timestamp
+                type: string
+              memoryAvailable:
+                description: MemoryAvailable is the available memory
+                type: string
+              nodeReady:
+                description: NodeReady indicates if the node is ready
+                type: boolean
+              operationalStatus:
+                default: NotAvailable
+                description: |-
+                  OperationalStatus is the current operational status of the drone
+                  Valid values are:
+                  - Flying: The drone is currently in flight.
+                  - Leaving: The drone is in the process of leaving.
+                  - NotAvailable (default): The drone is not available or its status is unknown.
+                enum:
+                - Flying
+                - Leaving
+                - NotAvailable
+                type: string
+              vfCount:
+                description: VFCount is the number of virtual functions running on
+                  this drone
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

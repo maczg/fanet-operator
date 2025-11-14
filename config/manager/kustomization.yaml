@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/massigollo/fanet-operator-controller
-  newTag: a016331
+  newTag: ab31edf

@@ -1,0 +1,52 @@
+apiVersion: fanet.restart.io/v1alpha1
+kind: Drone
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: drone-rp3001
+  namespace: default
+spec:
+  # Battery capacity in Wh
+  batteryCapacity: 100
+  
+  # Motor idle consumption in Wh
+  motorIdleConsumptionWh: "5.0"
+  
+  # CE idle consumption in Wh
+  ceIdleConsumptionWh: "2.0"
+  
+  # Node reference for the Kubernetes node this drone is hosting
+  nodeRef:
+    name: worker-rp3001
+  
+  # FANET reference - the FANET this drone belongs to
+  # TODO the controller will ignore this field and derive it from the FANET CRD instead
+  fanetRef:
+    name: demo-fanet
+  
+  # Indicates if this is a computing drone (capable of running VFs)
+  computingDrone: true
+---
+apiVersion: fanet.restart.io/v1alpha1
+kind: Drone
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: drone-rp3002
+  namespace: default
+spec:
+  # Battery capacity in Wh
+  batteryCapacity: 120
+  # Motor idle consumption in Wh
+  motorIdleConsumptionWh: "6.0"
+  # CE idle consumption in Wh
+  ceIdleConsumptionWh: "2.5"
+  nodeRef:
+    name: worker-rp3002
+  fanetRef:
+      name: demo-fanet
+
+  computingDrone: true
+

@@ -5,9 +5,17 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - fanet.restart.io
+  - ""
   resources:
-  - fanets
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
   verbs:
   - create
   - delete
@@ -19,13 +27,34 @@ rules:
 - apiGroups:
   - fanet.restart.io
   resources:
+  - drones
+  - fanets
+  - servicechains
+  - virtualfunctions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fanet.restart.io
+  resources:
+  - drones/finalizers
   - fanets/finalizers
+  - servicechains/finalizers
+  - virtualfunctions/finalizers
   verbs:
   - update
 - apiGroups:
   - fanet.restart.io
   resources:
+  - drones/status
   - fanets/status
+  - servicechains/status
+  - virtualfunctions/status
   verbs:
   - get
   - patch

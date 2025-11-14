@@ -1,0 +1,53 @@
+apiVersion: fanet.restart.io/v1alpha1
+kind: ServiceChain
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: edge-processing-chain
+spec:
+  # List of virtual functions in this service chain
+  functions:
+    # First function: Video ingestion
+    - name: video-ingestion
+      image: nginx:latest # for example purposes; replace with actual image
+#      args:
+#        - "--input=/dev/video0"
+#        - "--output=tcp://localhost:5000"
+      droneRef:
+        apiVersion: fanet.restart.io/v1alpha1
+        kind: Drone
+        name: drone-rp3001
+        namespace: default
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      idleEnergyConsumptionWh: "1.5"
+      activeEnergyConsumptionWh: "3.0"
+      maxLatencyMs: 50
+    
+    # Second function: Object detection
+    - name: object-detection
+      image: nginx:latest # for example purposes; replace with actual image
+#      args:
+#        - "--model=yolov8"
+#        - "--confidence=0.7"
+      droneRef:
+        apiVersion: fanet.restart.io/v1alpha1
+        kind: Drone
+        name: drone-rp3002
+        namespace: default
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "1Gi"
+      idleEnergyConsumptionWh: "2.0"
+      activeEnergyConsumptionWh: "5.0"
+      maxLatencyMs: 100

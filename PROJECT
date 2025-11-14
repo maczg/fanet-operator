@@ -20,4 +20,31 @@ resources:
   kind: Fanet
   path: github.com/maczg/fanet-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: restart.io
+  group: fanet
+  kind: Drone
+  path: github.com/maczg/fanet-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: restart.io
+  group: fanet
+  kind: ServiceChain
+  path: github.com/maczg/fanet-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: restart.io
+  group: fanet
+  kind: VirtualFunction
+  path: github.com/maczg/fanet-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

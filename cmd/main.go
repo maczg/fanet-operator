@@ -209,6 +209,27 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Fanet")
 		os.Exit(1)
 	}
+	if err := (&controller.DroneReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Drone")
+		os.Exit(1)
+	}
+	if err := (&controller.ServiceChainReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ServiceChain")
+		os.Exit(1)
+	}
+	if err := (&controller.VirtualFunctionReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "VirtualFunction")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if metricsCertWatcher != nil {

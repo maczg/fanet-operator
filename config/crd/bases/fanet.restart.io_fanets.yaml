@@ -33,7 +33,7 @@ spec:
       jsonPath: .status.notAvailableCount
       name: NotAvailable
       type: integer
-    - description: Total number of virtual functions across all drones
+    - description: Total number of virtual functions in the FANET
       jsonPath: .status.vfTotal
       name: VFTotal
       type: integer
@@ -72,15 +72,19 @@ spec:
                   description: DroneReference contains reference to a Drone
                   properties:
                     name:
-                      description: DroneName is the name of the drone
-                      type: string
-                    nodeRef:
                       description: NodeRef is the reference to the node the drone
                         is hosting
                       type: string
+                    nodeRef:
+                      description: DroneName is the name of the drone
+                      properties:
+                        name:
+                          type: string
+                      required:
+                      - name
+                      type: object
                   required:
                   - name
-                  - nodeRef
                   type: object
                 type: array
             type: object
@@ -88,60 +92,54 @@ spec:
             description: FanetStatus defines the observed state of Fanet.
             properties:
               droneStatuses:
-                description: DroneStatuses contains the status of each drone
+                description: DroneStatuses is the status of each drone
                 items:
-                  description: DroneStatusSummary contains summary status of a drone
-                    in the FANET.
+                  description: DroneStatusInfo contains status information about a
+                    drone
                   properties:
                     batteryLevel:
-                      description: BatteryLevel is the battery level
-                      type: string
+                      type: integer
                     computingDrone:
-                      description: ComputingDrone indicates if this drone is a computing
-                        drone or not
                       type: boolean
-                    name:
-                      description: Name of the drone
+                    cpuAvailable:
                       type: string
-                    status:
-                      description: Status is the operational status
+                    droneName:
+                      type: string
+                    memoryAvailable:
+                      type: string
+                    nodeReady:
+                      type: boolean
+                    operationalStatus:
+                      description: |-
+                        OperationalStatus describes the operational status of the drone.
+                        Only one of the following statuses can be set at a time.
+                        If none of the following statuses is set, the status is considered unknown.
+                      enum:
+                      - Flying
+                      - Leaving
+                      - NotAvailable
                       type: string
                     vfCount:
-                      description: VFCount is the number of VFs
-                      format: int32
                       type: integer
                   required:
-                  - batteryLevel
-                  - computingDrone
-                  - name
-                  - status
-                  - vfCount
+                  - droneName
                   type: object
                 type: array
               inFlightCount:
-                format: int32
+                description: InFlightCount is the number of drones in flight
                 type: integer
-              lastUpdated:
-                description: LastUpdated is the last time the status was updated
-                format: date-time
-                type: string
               leavingCount:
-                format: int32
+                description: LeavingCount is the number of drones leaving
                 type: integer
               notAvailableCount:
-                format: int32
+                description: NotAvailableCount is the number of drones not available
                 type: integer
               totalDroneCount:
-                description: TotalDroneCount is the total number of drones in this
-                  FANET
-                format: int32
-                minimum: 0
+                description: TotalDroneCount is the total number of drones
                 type: integer
               vfTotal:
-                format: int32
+                description: VFTotal is the total number of virtual functions
                 type: integer
-            required:
-            - inFlightCount
             type: object
         type: object
     served: true

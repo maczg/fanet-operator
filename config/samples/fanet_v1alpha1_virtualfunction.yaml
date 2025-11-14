@@ -1,0 +1,42 @@
+apiVersion: fanet.restart.io/v1alpha1
+kind: VirtualFunction
+metadata:
+  labels:
+    app.kubernetes.io/name: fanet-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: edge-video-processor
+spec:
+  # Container image for the virtual function
+  image: example.io/video-processor:v1.2.0
+  
+  # Arguments for the container
+  args:
+    - "--mode=realtime"
+    - "--codec=h264"
+    - "--resolution=1080p"
+  
+  # Reference to the drone to deploy this VF on
+  droneRef:
+    apiVersion: fanet.restart.io/v1alpha1
+    kind: Drone
+    name: drone-1
+    namespace: default
+  
+  # Name of the service chain this VF belongs to (optional)
+  serviceChainName: edge-processing-chain
+  
+  # Resource requirements for this VF
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  
+  # Energy consumption parameters
+  idleEnergyConsumptionWh: "2.5"
+  activeEnergyConsumptionWh: "6.0"
+  
+  # Maximum latency constraint in milliseconds
+  maxLatencyMs: 75

@@ -3,6 +3,9 @@
 # It should be run by config/default
 resources:
 - bases/fanet.restart.io_fanets.yaml
+- bases/fanet.restart.io_drones.yaml
+- bases/fanet.restart.io_servicechains.yaml
+- bases/fanet.restart.io_virtualfunctions.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patches:

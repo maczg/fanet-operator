@@ -22,6 +22,15 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the fanet-operator itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- virtualfunction_admin_role.yaml
+- virtualfunction_editor_role.yaml
+- virtualfunction_viewer_role.yaml
+- servicechain_admin_role.yaml
+- servicechain_editor_role.yaml
+- servicechain_viewer_role.yaml
+- drone_admin_role.yaml
+- drone_editor_role.yaml
+- drone_viewer_role.yaml
 - fanet_admin_role.yaml
 - fanet_editor_role.yaml
 - fanet_viewer_role.yaml

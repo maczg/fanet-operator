@@ -1,4 +1,5 @@
 ## Custom ignore rules
+ignore
 
 # Binaries for programs and plugins
 *.exe
