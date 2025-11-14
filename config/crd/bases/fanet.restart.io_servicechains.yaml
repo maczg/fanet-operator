@@ -14,7 +14,16 @@ spec:
     singular: servicechain
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Number of Virtual Functions
+      jsonPath: .status.vfCount
+      name: VFCount
+      type: integer
+    - description: Total VF Latency (ms)
+      jsonPath: .status.totalVfLatency
+      name: TotalVFLatency
+      type: integer
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: ServiceChain is the Schema for the servicechains API.

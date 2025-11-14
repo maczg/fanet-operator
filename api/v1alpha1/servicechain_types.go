@@ -49,6 +49,8 @@ type ServiceChainStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="VFCount",type="integer",JSONPath=".status.vfCount",description="Number of Virtual Functions"
+// +kubebuilder:printcolumn:name="TotalVFLatency",type="integer",JSONPath=".status.totalVfLatency",description="Total VF Latency (ms)"
 
 // ServiceChain is the Schema for the servicechains API.
 type ServiceChain struct {

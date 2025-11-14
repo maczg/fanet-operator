@@ -14,7 +14,28 @@ spec:
     singular: virtualfunction
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Drone Reference
+      jsonPath: .spec.droneRef.name
+      name: Drone
+      type: string
+    - description: Service Chain Name
+      jsonPath: .spec.serviceChainName
+      name: ServiceChain
+      type: string
+    - description: Pod Status of the Virtual Function
+      jsonPath: .status.statusPODVF
+      name: Pod Status
+      type: string
+    - description: Last Updated Timestamp
+      jsonPath: .status.lastUpdated
+      name: Last Updated
+      type: string
+    - description: Current Phase of the Virtual Function
+      jsonPath: .status.phase
+      name: Phase
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: VirtualFunction is the Schema for the virtualfunctions API.

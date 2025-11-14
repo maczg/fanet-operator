@@ -49,6 +49,11 @@ type VirtualFunctionStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Drone",type="string",JSONPath=".spec.droneRef.name",description="Drone Reference"
+// +kubebuilder:printcolumn:name="ServiceChain",type="string",JSONPath=".spec.serviceChainName",description="Service Chain Name"
+// +kubebuilder:printcolumn:name="Pod Status",type="string",JSONPath=".status.statusPODVF",description="Pod Status of the Virtual Function"
+// +kubebuilder:printcolumn:name="Last Updated",type="string",JSONPath=".status.lastUpdated",description="Last Updated Timestamp"
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="Current Phase of the Virtual Function"
 
 // VirtualFunction is the Schema for the virtualfunctions API.
 type VirtualFunction struct {

@@ -45,6 +45,7 @@ func convertMemory(memQuantity resource.Quantity) int {
 // +kubebuilder:rbac:groups=fanet.restart.io,resources=drones/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=fanet.restart.io,resources=drones/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
+// +kubebuilder:rbac:groups=fanet.restart.io,resources=virtualfunctions,verbs=get;list;watch
 
 func (r *DroneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := logf.FromContext(ctx)
@@ -149,6 +150,20 @@ func (r *DroneReconciler) updateDroneStatus(ctx context.Context, drone fanetv1al
 			latestDrone.Status.OperationalStatus = ptr.To(fanetv1alpha1.OperationalStatusNotAvailable)
 			latestDrone.Status.NodeReady = false
 		}
+		// Count VirtualFunctions on this drone
+		vfList := &fanetv1alpha1.VirtualFunctionList{}
+		if err := r.List(ctx, vfList, client.InNamespace(latestDrone.Namespace)); err != nil {
+			logger.Error(err, "Failed to list VirtualFunctions")
+		} else {
+			vfCount := 0
+			for _, vf := range vfList.Items {
+				if vf.Spec.DroneRef != nil && vf.Spec.DroneRef.Name == latestDrone.Name {
+					vfCount++
+				}
+			}
+			latestDrone.Status.VFCount = vfCount
+		}
+
 		// Update operational status based on battery level
 		if latestDrone.Status.BatteryLevel > 20 {
 			if latestDrone.Status.NodeReady {
